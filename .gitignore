@@ -1,0 +1,49 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+
+# Environment files (keep .env.example)
+.env
+.env.local
+.env.*.local
+!.env.example
+!.env.local.example
+!backend/.env.example
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Docker volumes
+postgres_data/
+
+# Uploads (transient user data)
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# TypeScript
+*.tsbuildinfo
+
+# Prisma generated
+backend/node_modules/.prisma/
+
+# Coverage
+coverage/

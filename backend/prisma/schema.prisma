@@ -1,0 +1,205 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  OWNER
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+enum TransactionType {
+  REVENUE
+  EXPENSE
+  TAX
+  WITHDRAWAL
+  TRANSFER
+  CMV
+}
+
+enum TransactionSource {
+  MANUAL
+  IMPORT
+  AI
+}
+
+enum BankAccountType {
+  CHECKING
+  SAVINGS
+  INVESTMENT
+}
+
+enum ImportStatus {
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+model User {
+  id          String        @id @default(uuid())
+  email       String        @unique
+  name        String
+  password    String
+  role        String        @default("USER")
+  avatar      String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  deletedAt   DateTime?
+  companies   UserCompany[]
+
+  @@index([email])
+  @@index([deletedAt])
+}
+
+model Company {
+  id              String            @id @default(uuid())
+  name            String
+  cnpj            String?           @unique
+  logo            String?
+  primaryColor    String?           @default("#6366f1")
+  secondaryColor  String?           @default("#8b5cf6")
+  address         String?
+  phone           String?
+  email           String?
+  active          Boolean           @default(true)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  deletedAt       DateTime?
+  users           UserCompany[]
+  transactions    Transaction[]
+  categories      Category[]
+  bankAccounts    BankAccount[]
+  imports         ImportHistory[]
+  reports         FinancialReport[]
+
+  @@index([cnpj])
+  @@index([deletedAt])
+}
+
+model UserCompany {
+  userId    String
+  companyId String
+  role      Role     @default(VIEWER)
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@id([userId, companyId])
+  @@index([userId])
+  @@index([companyId])
+}
+
+model Transaction {
+  id           String            @id @default(uuid())
+  companyId    String
+  date         DateTime
+  description  String
+  amount       Int
+  type         TransactionType
+  category     String?
+  subcategory  String?
+  bankAccount  String?
+  reference    String?
+  notes        String?
+  source       TransactionSource @default(MANUAL)
+  aiClassified Boolean           @default(false)
+  aiConfidence Float?
+  tags         String[]          @default([])
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  deletedAt    DateTime?
+  importId     String?
+
+  company Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  import  ImportHistory? @relation(fields: [importId], references: [id])
+
+  @@index([companyId])
+  @@index([date])
+  @@index([type])
+  @@index([category])
+  @@index([deletedAt])
+  @@index([importId])
+}
+
+model Category {
+  id        String   @id @default(uuid())
+  companyId String
+  name      String
+  type      TransactionType
+  color     String?  @default("#6366f1")
+  icon      String?
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, name, type])
+  @@index([companyId])
+  @@index([type])
+}
+
+model BankAccount {
+  id        String          @id @default(uuid())
+  companyId String
+  name      String
+  bank      String?
+  agency    String?
+  account   String?
+  type      BankAccountType @default(CHECKING)
+  balance   Int             @default(0)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+}
+
+model ImportHistory {
+  id            String       @id @default(uuid())
+  companyId     String
+  fileName      String
+  fileType      String
+  status        ImportStatus @default(PROCESSING)
+  totalRows     Int          @default(0)
+  processedRows Int          @default(0)
+  errors        Json?
+  createdAt     DateTime     @default(now())
+  completedAt   DateTime?
+  transactions  Transaction[]
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+  @@index([status])
+}
+
+model FinancialReport {
+  id          String   @id @default(uuid())
+  companyId   String
+  month       Int
+  year        Int
+  revenue     Int      @default(0)
+  expenses    Int      @default(0)
+  cmv         Int      @default(0)
+  grossProfit Int      @default(0)
+  netProfit   Int      @default(0)
+  taxes       Int      @default(0)
+  withdrawals Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, month, year])
+  @@index([companyId])
+  @@index([year, month])
+}
