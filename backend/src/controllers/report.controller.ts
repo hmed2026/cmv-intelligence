@@ -125,14 +125,14 @@ export async function exportReport(req: Request, res: Response): Promise<void> {
       const dre = await reportService.getDRE(companyId, month, year);
 
       data = [
-        { item: 'Receita Bruta', valor: dre.revenue },
+        { item: 'Receita Bruta', valor: dre.grossRevenue },
         { item: 'CMV', valor: dre.cmv },
         { item: 'Lucro Bruto', valor: dre.grossProfit },
         { item: 'Margem Bruta (%)', valor: dre.grossMargin },
-        ...Object.entries(dre.expenses).map(([k, v]) => ({ item: k, valor: v })),
-        { item: 'Total Despesas', valor: dre.totalExpenses },
+        ...Object.entries(dre.expensesByCategory).map(([k, v]) => ({ item: k, valor: v })),
+        { item: 'Total Despesas', valor: dre.operatingExpenses },
         { item: 'Impostos', valor: dre.taxes },
-        { item: 'EBITDA', valor: dre.ebitda },
+        { item: 'EBITDA', valor: dre.operatingProfit },
         { item: 'Retiradas', valor: dre.withdrawals },
         { item: 'Lucro Líquido', valor: dre.netProfit },
         { item: 'Margem Líquida (%)', valor: dre.netMargin },

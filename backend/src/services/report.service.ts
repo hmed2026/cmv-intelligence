@@ -332,8 +332,8 @@ export async function saveMonthlyReport(
   return prisma.financialReport.upsert({
     where: { companyId_month_year: { companyId, month, year } },
     update: {
-      revenue: Math.round(dre.revenue * 100),
-      expenses: Math.round(dre.totalExpenses * 100),
+      revenue: Math.round(dre.grossRevenue * 100),
+      expenses: Math.round(dre.operatingExpenses * 100),
       cmv: Math.round(dre.cmv * 100),
       grossProfit: Math.round(dre.grossProfit * 100),
       netProfit: Math.round(dre.netProfit * 100),
@@ -344,8 +344,8 @@ export async function saveMonthlyReport(
       companyId,
       month,
       year,
-      revenue: Math.round(dre.revenue * 100),
-      expenses: Math.round(dre.totalExpenses * 100),
+      revenue: Math.round(dre.grossRevenue * 100),
+      expenses: Math.round(dre.operatingExpenses * 100),
       cmv: Math.round(dre.cmv * 100),
       grossProfit: Math.round(dre.grossProfit * 100),
       netProfit: Math.round(dre.netProfit * 100),

@@ -17,10 +17,9 @@ export function centsToDecimal(cents: number): number {
 
 export async function getCompanies(userId: string) {
   const userCompanies = await prisma.userCompany.findMany({
-    where: { userId },
+    where: { userId, company: { deletedAt: null } },
     include: {
       company: {
-        where: { deletedAt: null },
         select: {
           id: true,
           name: true,
@@ -40,19 +39,15 @@ export async function getCompanies(userId: string) {
   return userCompanies
     .filter((uc) => uc.company)
     .map((uc) => ({
-      ...uc.company,
+      ...uc.company!,
       role: uc.role,
     }));
 }
 
 export async function getCompany(id: string, userId: string) {
   const userCompany = await prisma.userCompany.findFirst({
-    where: { userId, companyId: id },
-    include: {
-      company: {
-        where: { deletedAt: null },
-      },
-    },
+    where: { userId, companyId: id, company: { deletedAt: null } },
+    include: { company: true },
   });
 
   if (!userCompany || !userCompany.company) {
